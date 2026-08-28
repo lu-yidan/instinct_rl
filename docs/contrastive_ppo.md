@@ -12,8 +12,8 @@ forking the runner.
   actor representation;
 - `critic_encoder`: consumes selected privileged critic components, supplies the
   critic representation, and is trained by the value loss;
-- `response_encoder`: consumes selected policy observations and supplies the
-  HIM-style successor-response target.
+- `response_encoder`: consumes selected policy observations and supplies a
+  successor-proprioception target.
 
 The actor and target representations are passed through separate projection
 heads before InfoNCE. When `contrastive_stop_target_gradient` is enabled, the
@@ -27,7 +27,7 @@ encoder remains trained by the value loss.
 | NoAux | none | — | — |
 | CRA-current | privileged critic observation | `t` | yes |
 | CRA-next | privileged critic observation | `t+1` | yes |
-| HIM-next | successor policy response | `t+1` | no |
+| Proprio-next | successor policy response | `t+1` | yes |
 
 NoAux still uses the same policy class, encoders, optimizer, rollout storage,
 and actor/critic capacity. Its only difference is
@@ -35,6 +35,11 @@ and actor/critic capacity. Its only difference is
 
 `ContrastiveRolloutStorage` excludes terminal transitions from next-step
 InfoNCE because the post-terminal observation belongs to a reset episode.
+
+Proprio-next is a matched target-content control, not a reproduction of
+HIMLoco. HIMLoco uses an additional velocity-estimation loss and a
+prototype-based swapped-assignment objective; results from this implementation
+must not be reported as HIMLoco results.
 
 ## Configuration keys
 
