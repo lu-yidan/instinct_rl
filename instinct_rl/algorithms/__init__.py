@@ -28,6 +28,7 @@
 #
 # Copyright (c) 2021 ETH Zurich, Nikita Rudin
 
+from .contrastive import ContrastivePPO
 from .estimator import EstimatorPPO, EstimatorTPPO
 from .lipschitz import LipschitzPPO
 from .ppo import PPO
@@ -46,6 +47,7 @@ class WasabiEstimatorPPO(WasabiAlgoMixin, EstimatorPPO):
 
 __all__ = [
     "PPO",
+    "ContrastivePPO",
     "TPPO",
     "EstimatorPPO",
     "EstimatorTPPO",

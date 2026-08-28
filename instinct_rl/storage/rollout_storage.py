@@ -608,3 +608,22 @@ class SarsaRolloutStorage(RolloutStorage):
             next_obs_batch,
             next_critic_obs_batch,
         )
+
+
+class ContrastiveRolloutStorage(SarsaRolloutStorage):
+    """SARSA storage that marks terminal next observations as invalid targets."""
+
+    MiniBatch = namedtuple(
+        "MiniBatch",
+        [
+            *SarsaRolloutStorage.MiniBatch._fields,
+            "next_valid",
+        ],
+    )
+
+    def get_minibatch_from_selection(self, T_slice, B_slice, padded_B_slice=None, prev_done_mask=None):
+        minibatch = super().get_minibatch_from_selection(T_slice, B_slice, padded_B_slice, prev_done_mask)
+        next_valid = ~self.dones[T_slice, B_slice].bool()
+        if padded_B_slice is not None:
+            next_valid = next_valid & minibatch.masks.unsqueeze(-1)
+        return ContrastiveRolloutStorage.MiniBatch(*minibatch, next_valid)

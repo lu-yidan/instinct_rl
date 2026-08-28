@@ -3,6 +3,7 @@ from typing import Dict
 
 from .actor_critic import ActorCritic
 from .actor_critic_recurrent import ActorCriticRecurrent
+from .contrastive_actor_critic import ContrastiveActorCritic
 from .all_mixer import (
     EncoderMoEActorCritic,
     EncoderStateAc,
