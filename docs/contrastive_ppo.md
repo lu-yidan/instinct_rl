@@ -4,6 +4,11 @@
 the Adam SP CRA revision study. It extends the existing PPO path instead of
 forking the runner.
 
+`ContrastiveWasabiPPO` composes the same objective with the existing
+Wasabi/AMP mixin. Use it when the environment's established locomotion baseline
+depends on discriminator rewards; the contrastive ablation must not silently
+remove that common training signal.
+
 ## Model boundary
 
 `ContrastiveActorCritic` contains three representation encoders:

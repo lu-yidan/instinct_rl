@@ -2,7 +2,7 @@ from collections import OrderedDict
 
 import torch
 
-from instinct_rl.algorithms import ContrastivePPO
+from instinct_rl.algorithms import ContrastivePPO, ContrastiveWasabiPPO
 from instinct_rl.modules import ContrastiveActorCritic
 from instinct_rl.storage import ContrastiveRolloutStorage
 
@@ -11,6 +11,8 @@ def _obs_format():
     return {
         "policy": OrderedDict(proprio=(12,), command=(3,)),
         "critic": OrderedDict(proprio=(12,), command=(3,), terrain=(20,)),
+        "amp_policy": OrderedDict(state=(10,)),
+        "amp_reference": OrderedDict(state=(10,)),
     }
 
 
@@ -47,7 +49,7 @@ def test_current_and_next_contrastive_updates_are_finite():
     for target_source, target_timestep, stop_target_gradient in (
         ("critic", "current", True),
         ("critic", "next", True),
-        ("policy", "next", False),
+        ("policy", "next", True),
     ):
         model = _model()
         algorithm = ContrastivePPO(
@@ -113,3 +115,44 @@ def test_terminal_next_observation_is_not_a_valid_contrastive_target():
 
     assert not minibatch.next_valid[0]
     assert minibatch.next_valid[1]
+
+
+def test_contrastive_wasabi_composes_amp_and_contrastive_updates():
+    model = _model()
+    algorithm = ContrastiveWasabiPPO(
+        model,
+        num_learning_epochs=1,
+        num_mini_batches=1,
+        contrastive_loss_coef=0.1,
+        discriminator_kwargs={"hidden_sizes": [16]},
+        discriminator_gradient_penalty_coef=0.0,
+    )
+    algorithm.init_storage(8, 2, _obs_format(), 4)
+
+    policy_obs = torch.randn(8, 15)
+    critic_obs = torch.randn(8, 35)
+    for _ in range(2):
+        algorithm.act(policy_obs, critic_obs)
+        next_policy_obs = torch.randn(8, 15)
+        next_critic_obs = torch.randn(8, 35)
+        algorithm.process_env_step(
+            rewards=torch.randn(8, 1),
+            dones=torch.zeros(8, dtype=torch.bool),
+            infos={
+                "observations": {
+                    "amp_policy": torch.randn(8, 10),
+                    "amp_reference": torch.randn(8, 10),
+                },
+                "step": {},
+            },
+            next_obs=next_policy_obs,
+            next_critic_obs=next_critic_obs,
+        )
+        policy_obs = next_policy_obs
+        critic_obs = next_critic_obs
+
+    algorithm.compute_returns(critic_obs)
+    losses, _ = algorithm.update(0)
+
+    assert torch.isfinite(losses["contrastive_loss"])
+    assert torch.isfinite(losses["discriminator_loss"])

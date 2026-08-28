@@ -4,6 +4,7 @@ import torch
 import torch.nn.functional as F
 
 from instinct_rl.algorithms.ppo import PPO
+from instinct_rl.algorithms.wasabi import WasabiAlgoMixin
 from instinct_rl.storage import ContrastiveRolloutStorage
 from instinct_rl.utils.utils import get_subobs_size
 
@@ -111,3 +112,9 @@ class ContrastivePPO(PPO):
         stats["contrastive_top1"] = (logits.argmax(dim=-1) == labels).float().mean()
         stats["contrastive_samples"] = logits.new_tensor(logits.shape[0])
         return losses, inter_vars, stats
+
+
+class ContrastiveWasabiPPO(WasabiAlgoMixin, ContrastivePPO):
+    """Contrastive PPO with the existing Wasabi/AMP reward and discriminator."""
+
+    pass
