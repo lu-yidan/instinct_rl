@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Dict, Iterable
 
 import torch
+from torch import nn
 
 from instinct_rl.modules.contrastive_actor_critic import ContrastiveActorCritic
 from instinct_rl.modules.mlp import MlpModel
@@ -27,6 +28,11 @@ class PrivilegedRegressionActorCritic(ContrastiveActorCritic):
             critic_target_components=target_components,
             **kwargs,
         )
+        # The regression baseline replaces, rather than supplements, the CRA
+        # projection objective. Parameter-free identities keep inherited
+        # inspection methods valid without adding inactive trainable weights.
+        self.actor_projector = nn.Identity()
+        self.target_projector = nn.Identity()
         target_size = get_subobs_size(obs_format.get("critic", obs_format["policy"]), target_components)
         self.privileged_regressor = MlpModel(
             input_size=self.representation_dim,

@@ -69,6 +69,8 @@ def test_privileged_regression_model_predicts_raw_target_shape():
     assert model.predict_privileged_target(actor_latent).shape == (5, 20)
     assert model.privileged_regression_target(critic_obs).shape == (5, 20)
     assert model.act(policy_obs).shape == (5, 4)
+    assert sum(parameter.numel() for parameter in model.actor_projector.parameters()) == 0
+    assert sum(parameter.numel() for parameter in model.target_projector.parameters()) == 0
 
 
 def test_current_and_next_privileged_regression_updates_are_finite():
@@ -87,7 +89,8 @@ def test_current_and_next_privileged_regression_updates_are_finite():
         assert torch.isfinite(losses["privileged_regression_loss"])
         assert torch.isfinite(losses["total_loss"])
         assert torch.isfinite(stats["privileged_regression_rmse"])
-        assert stats["privileged_regression_samples"] > 0
+        expected_samples = 23 if target_timestep == "next" else 24
+        assert stats["privileged_regression_samples"] == expected_samples
 
 
 def test_privileged_regression_wasabi_composes_both_updates():
