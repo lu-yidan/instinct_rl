@@ -18,6 +18,7 @@ from .normalizer import (
     EmpiricalNormalization,
 )
 from .parallel_layer import ParallelLayer
+from .privileged_regression_actor_critic import PrivilegedRegressionActorCritic
 from .state_estimator import (
     EstimatorActorCritic,
     EstimatorActorCriticRecurrent,

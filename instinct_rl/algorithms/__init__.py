@@ -32,6 +32,7 @@ from .contrastive import ContrastivePPO, ContrastiveWasabiPPO
 from .estimator import EstimatorPPO, EstimatorTPPO
 from .lipschitz import LipschitzPPO
 from .ppo import PPO
+from .privileged_regression import PrivilegedRegressionPPO, PrivilegedRegressionWasabiPPO
 from .tppo import TPPO
 from .vae_distill import VaeDistill
 from .wasabi import WasabiAlgoMixin, WasabiPPO
@@ -49,6 +50,8 @@ __all__ = [
     "PPO",
     "ContrastivePPO",
     "ContrastiveWasabiPPO",
+    "PrivilegedRegressionPPO",
+    "PrivilegedRegressionWasabiPPO",
     "TPPO",
     "EstimatorPPO",
     "EstimatorTPPO",
